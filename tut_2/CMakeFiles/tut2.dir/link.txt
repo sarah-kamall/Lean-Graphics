@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/tut2.dir/main.cpp.o CMakeFiles/tut2.dir/glad/src/glad.c.o -o tut2  -lglfw 
