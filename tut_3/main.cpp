@@ -83,18 +83,26 @@ int main(int, char **)
 
     glDeleteShader(fs);
     glDeleteShader(vs);
-    Vertex verices[3] = {
+    Vertex verices[4] = {
         {{-0.5, -0.5, 0.0}, {255, 200, 0, 255}},
         {{0.5, -0.5, 0.0}, {0, 50, 0, 255}},
-        {{-0.5, 0.5, 0.0}, {0, 100, 0, 255}}};
-    GLuint vertex_buffer; // this is just a container of data and its type indicates the proximity of memory to both GPU and CPU
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(Vertex), verices, GL_STATIC_DRAW);
-
+        {{-0.5, 0.5, 0.0}, {0, 100, 0, 255}},
+        {{0.5, 0.5, 0.0}, {255, 200, 0, 255}},
+    };
+    uint16_t elements[6] = {0, 1, 2, 3, 1, 2};
     GLuint vertex_array; // this is what knows the true logic of drawing on where
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
+
+    GLuint vertex_buffer; // this is just a container of data and its type indicates the proximity of memory to both GPU and CPU
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), verices, GL_STATIC_DRAW);
+
+    GLuint element_buffer; // this is just a container of data and its type indicates the proximity of memory to both GPU and CPU
+    glGenBuffers(1, &element_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(uint16_t), elements, GL_STATIC_DRAW);
 
     GLuint position_location = 0;
     glEnableVertexAttribArray(position_location);
@@ -102,9 +110,13 @@ int main(int, char **)
 
     GLuint color_location = 1;
     glEnableVertexAttribArray(color_location);
-    glVertexAttribPointer(color_location, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex), (void *)(offsetof(Vertex, color))); // normalized divides by max(type)
+    glVertexAttribPointer(color_location, 4, GL_UNSIGNED_BYTE, true, sizeof(Vertex), (void *)(offsetof(Vertex, color))); // normalized divides by max(type)
 
     GLuint time_loc = glGetUniformLocation(program, "time");
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+    // glBindVertexArray(0);
+
     while (!glfwWindowShouldClose(window))
     {
         float time = (float)glfwGetTime();
@@ -115,11 +127,7 @@ int main(int, char **)
 
         glBindVertexArray(vertex_array);
         glUniform1f(time_loc, time);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        glUniform1f(time_loc, time + 1);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void *)0);
         glfwSwapBuffers(window); // swap back with front buffer
 
         glfwPollEvents();
